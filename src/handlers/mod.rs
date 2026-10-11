@@ -735,7 +735,10 @@ impl GammaControlHandler for State {
     }
 
     fn get_gamma_size(&mut self, output: &Output) -> Option<u32> {
-        match self.backend.tty().get_gamma_size(output) {
+        // Gamma control only exists for the DRM backend.
+        let tty = self.backend.tty_checked()?;
+
+        match tty.get_gamma_size(output) {
             Ok(0) => None, // Setting gamma is not supported.
             Ok(size) => Some(size),
             Err(err) => {
@@ -749,7 +752,9 @@ impl GammaControlHandler for State {
     }
 
     fn set_gamma(&mut self, output: &Output, ramp: Option<Vec<u16>>) -> Option<()> {
-        match self.backend.tty().set_gamma(output, ramp) {
+        let tty = self.backend.tty_checked()?;
+
+        match tty.set_gamma(output, ramp) {
             Ok(()) => Some(()),
             Err(err) => {
                 warn!("error setting gamma for output {}: {err:?}", output.name());
